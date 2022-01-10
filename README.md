@@ -17,7 +17,8 @@
 Сервер должен поддерживать возможность одновременной работы с хотя бы 50 клиентами.
 Для реализации взаимодействия между сервером и клиентом системы допускается (но не требуется) использование высокоуровнего протокола (например, HTTP).
 ## Решение
-#**Сборка и запуск**
+**Сборка и запуск**
+
 Для сборки достаточно выполнить makefile, исполняемые файлы будут созданы в папке bin.
 
 Программы должны собираться на Ubuntu.
@@ -32,6 +33,9 @@
 
 Логфайл сервера будет создан в папке с сервером.
 **Составные части программы**
+
 Код сервера [server](https://github.com/mamkad/Veeam-Software_Junior-Developer-in-QA_-/tree/main/server)
+
 Код клиента [client](https://github.com/mamkad/Veeam-Software_Junior-Developer-in-QA_-/tree/main/client)
+
 Базовый класс клиента и сервера [conclser](https://github.com/mamkad/Veeam-Software_Junior-Developer-in-QA_-/tree/main/conclser)
