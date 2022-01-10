@@ -21,29 +21,29 @@ using std::endl;
  // Деструктор
  client::~client()
  {
-   cout << "client stops working" << endl;
+   cout << endl << "client stops working" << endl;
  }
 
  // Подключиться к серверу
  bool client::set_connect(struct sockaddr_in& address, int fd)
  {
-   if (connect(fd, (struct sockaddr*)&address, sizeof(address)) <= 0)
+   if (connect(fd, (struct sockaddr*)&address, sizeof(address)) < 0)
      return false;
    return true;
  }
 
  // Прочитать порт кодов
- bool client::read_codeport()
+ bool client::read_codeport(idcode_t& id, idcode_t& code)
  {
-   if (write(code_fd, (char*)&data.id, sizeof(data.id)) <= 0)
+   if (write(code_fd, (char*)&id, sizeof(id)) <= 0)
      return false;
-   if (read (code_fd, (char*)&data.code,  sizeof(data.code)) <= 0)
+   if (read (code_fd, (char*)&code,  sizeof(code)) <= 0)
      return false;
     return true;
  }
 
  // Записать на порт данных
- bool client::write_dataport()
+ bool client::write_dataport(datapkg&  data)
  {
    if (write(data_fd, (char*)&data.id,   sizeof(data.id)) <= 0)
     return false;
@@ -55,6 +55,14 @@ using std::endl;
     return false;
 
    return true;
+ }
+
+ // Прочитать порт данных
+ bool client::read_dataport(int& ret_code)
+ {
+   if (read (data_fd, (char*)&ret_code,  sizeof(ret_code)) <= 0)
+     return false;
+  return true;
  }
 
  // Прочитать данные из файла
@@ -77,39 +85,29 @@ using std::endl;
    return true;
  }
 
- // Прочитать данные из ввода
- bool client::setdfrmsg(string const& msg)
- {
-   data.size = msg.size();
-   data.buffer = new char[data.size];
-   if (!data.buffer)
-    return false;
-   memcpy(data.buffer, msg.c_str(), msg.size());
-   return true;
- }
-
  // Получить код от сервера
  bool client::getcode()
  {
    // Устнавливаем соединение с портом кодов
    if (!set_connect(code_address, code_fd)) {
-     cout << "Connect error" << endl;
+     cout << endl << "Connect error" << endl;
      return false;
    }
 
    cout << "connection to code port is established" << endl;
    cout << endl << "enter the ID (Must be a positive integer) : ";
    // Вводим id
-   if (!(cin >> data.id)) {
-     cout << "wrong input" << endl;
+   idcode_t id, code;
+   if (!(cin >> id)) {
+     cout << endl << "wrong input" << endl;
      return false;
    }
    // Пытаемся отправить id  серверу и получить код
-   if (!read_codeport()) {
-      cout << "error of get code" << endl;
+   if (!read_codeport(id, code)) {
+      cout << endl << "error of get code" << endl;
       return false;
    } else {
-     cout << "code received: "<< data.code << endl;
+     cout << endl << "code received: "<< code << endl;
    }
    // Закрываем соединение
    cls_connect(code_fd);
@@ -119,57 +117,47 @@ using std::endl;
  // Отправить данные
 void client::sendmsg()
 {
-  // Устнавливаем соединение с портом данных
+  // Устанавливаем соединение с портом данных
   if (!set_connect(data_address, data_fd)) {
-    cout << "Connect error" << endl;
+    cout << endl << "connect error" << endl;
     return;
   }
-
-  cout << endl << "send data from a file - 0" << endl << "enter a message manually - 1" << endl << endl;
-
-  int answer;
-  if (!(cin >> answer)) {
-    cout << "wrong input" << endl;
-    // Закрываем соединение
-    cls_connect(data_fd);
+  cout << endl << "======data entry======" << endl;
+  datapkg data;  // Id клиента, Код полученный от сервера, буфер данных)
+  // Ввод имени файла
+  cout << endl << "enter the file name to send : ";
+  string fname;
+  cin >> fname;
+  cout << endl;
+  // Открываем файл
+  if (!openfile(fname, data)) {
+    cout << endl << "error of open file" << endl;
     return;
   }
-  cin.clear();
-
-  switch(answer) {
-    case 0:
-    {
-      cout << "enter the filename : ";
-      string fname;
-      cin >> fname;
-
-      if (!openfile(fname, data)) {
-        cout << "error of open file" << endl;
-        return;
-      }
-      cout << "file uploaded" << endl;
-      break;
-    }
-    case 1:
-    {
-      cout << "enter the msg : ";
-      string msg;
-      getline(cin, msg);
-      if (!setdfrmsg(msg)) {
-        cout << "error of ge msg" << endl;
-        return;
-      }
-      break;
-    }
-    default:
-      cout << "unknown answer" << endl;
-      return;
+  cout << "file uploaded" << endl;
+  // Ввод id и code
+  cout << endl << "enter the your id and code that you got from server separated by a space: ";
+  if (!(cin >> data.id >> data.code)) {
+    cout << endl << "wrong input" << endl;
+    return;
   }
   // Пытаемся отправить данные  cерверу
-  if(!write_dataport()) {
-    cout << "error of send data"<< endl;
+  if (!write_dataport(data)) {
+    cout << endl <<  "error of send data"<< endl;
   } else {
       delete [] data.buffer;
+  }
+
+  // Читаем ответ от сервера, совпали ли коды
+  int ret_code;
+  if (!read_dataport(ret_code)) {
+    cout << endl <<  "error of read data port"<< endl;
+  } else {
+    if (ret_code == SUCCESS) {
+      cout << endl << "server has successfully received the file data" << endl;
+    } else {
+      cout << endl << "codes didn't match" << endl;
+    }
   }
   // Закрываем соединение
   cls_connect(data_fd);

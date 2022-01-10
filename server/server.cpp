@@ -29,7 +29,7 @@ server::server(string const& ip, string const& dport, string const& cport, int b
 // Деструктор
 server::~server()
 {
-  cout << "server stops working" << endl;
+  cout << endl << "server stops working" << endl;
 }
 
 // Назначить прослушивание данного адреса
@@ -37,12 +37,12 @@ void server::set_listen(struct sockaddr_in& address, int& fd)
 {
   // Связываем дескриптор и адрес
   if (bind(fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
-    cout << "error of bind" << endl;
+    cout << endl << "error of bind" << endl;
     throw std::invalid_argument("err"); // Бросаем исключением в случае неудачи bind
   }
   // Назначаем слушать данный дескриптор
   if (listen(fd, backlog) < 0) {
-    cout << "error of bind" << endl;
+    cout << endl << "error of listen" << endl;
     throw std::invalid_argument("err"); // Бросаем исключением в случае неудачи listen
   }
 }
@@ -63,10 +63,10 @@ void server::listen_codeport()
     // Проверяем на успешное завершение
     int connfd;
     if(!accept_connect(code_fd, connfd)) {
-      cout << "error of accept" << endl;
+      cout << endl << "error of accept to code port" << endl;
       continue;
     }
-    cout << "got connecton to code port" << endl;
+    cout << endl << "got connecton to code port" << endl;
     // Это порождённые процессы
 		// Сервер сможет обрабатывать несколько соединений одновременно
     if (!fork()) {
@@ -75,7 +75,7 @@ void server::listen_codeport()
       // Проверяем на успешное завершение
       idcode_t id;
       if (!read_codeport(connfd, id)) {  // Ошибка чтения
-        cout << "error of read" << endl;
+        cout << endl << "error of read code port" << endl;
         exit(1);  // Завершаем дочерний процесс
       }
       //Вычисляем код для идентификатора
@@ -83,7 +83,7 @@ void server::listen_codeport()
       // Отправляем клиенту код
       // Проверяем на успешное завершение
       if(!write_codeport(connfd, codeusr)) { // Ошибка записи
-        cout << "error of write" << endl;
+        cout << endl << "error of write to code port" << endl;
         exit(1); // Завершаем дочерний процесс
       }
       // Закрываем сокет
@@ -119,7 +119,7 @@ void server::listen_dataport()
     // Проверяем на успешное завершение
     int connfd;
     if(!accept_connect(data_fd, connfd)) {
-      cout << "error of accept" << endl;
+      cout << "error of accept to data port" << endl;
       continue;
     }
     cout << "got connecton to data port" << endl;
@@ -133,12 +133,13 @@ void server::listen_dataport()
       int rv = read_dataport(connfd, readdata);
       // Проверяем, что чтение прошло успешно
       if (rv == -1) {
-        cout << "error of read dataport" << endl;
+        cout << endl << "error of read dataport" << endl;
         exit(1);
       }
       //  Проверяем, что проверка кода пользователя прошла успешно
       if (rv == -2) {
-        cout << "codes don't match" << endl;
+        cout << endl << "codes don't match" << endl;
+        // Отправляем клиенту информацию о результате соединения
         if(!write_dataport(connfd, WRONGCODE)) {
           cout << "error of write" << endl;
           exit(1);
@@ -146,10 +147,10 @@ void server::listen_dataport()
       } else {
         // Всё прошло успешно
         // Записываем данные в логфайл
-        cout << "data received successfully" << endl;
+        cout  << endl << "data received successfully" << endl;
         // Записываем в лог и проверяем, что удалось записать
         if(!savetolog(readdata)) {
-          cout << "error of open logfile: "<< logfile << endl;
+          cout << endl << "error of open logfile: "<< logfile << endl;
           exit(1);
         }
         // Отправляем клиенту информацию о результате соединения

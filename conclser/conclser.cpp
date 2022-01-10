@@ -37,7 +37,7 @@ conclser::~conclser()
   // Закрываем сокеты
   cls_connect(code_fd);
   cls_connect(data_fd);
-  cout << "descriptors are closed" << endl;
+  cout << endl << "descriptors are closed" << endl;
 }
 
 // Инициализация структуры адреса
@@ -48,7 +48,7 @@ void conclser::set_addres(struct sockaddr_in& address, string const& port)
 
   // Проверка корректности ip
   if (inet_pton(AF_INET, ip.c_str(), &address.sin_addr) <= 0) {
-    cout << "inet_pton error for " << ip.c_str() << endl;
+    cout << endl << "inet_pton error for " << ip.c_str() << endl;
     throw std::invalid_argument("err"); // Бросаем исключением в случае неправильного адреса
   }
 
@@ -61,7 +61,7 @@ void conclser::set_addres(struct sockaddr_in& address, string const& port)
       throw;
     }
   } catch(...) {
-    cout << "Backlog must be a numeric value greater than zero" << endl;
+    cout  << endl << "Backlog must be a numeric value greater than zero" << endl;
     throw std::invalid_argument("err");
   }
   // Присваиваем порт
@@ -72,7 +72,7 @@ void conclser::set_addres(struct sockaddr_in& address, string const& port)
 void conclser::create_socket(int& fd)
 {
   if ( (fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    cout << "Error of socket" << endl;
+    cout  << endl << "Error of socket" << endl;
     throw std::invalid_argument("err"); // Бросаем исключением в случае неудачного создания сокета
   }
 }

@@ -9,8 +9,6 @@
 // Класс клиента
 class client : public conclser
 {
-private:
-  datapkg  data;        // Id клиента, Код полученный от сервера, буфер данных
 public:
   // Инициализация
                                 // Принимает
@@ -25,13 +23,13 @@ private:
   bool set_connect(struct sockaddr_in& address, int fd);
   // Прочитать данные из файла
   bool openfile(string const& fname, datapkg& data);
-  // Прочитать данные из ввода
-  bool setdfrmsg(string const& msg);
 private:
   // Прочитать порт кодов
-  bool read_codeport();
+  bool read_codeport(idcode_t& id, idcode_t& code);
   // Записать на порт данных
-  bool write_dataport();
+  bool write_dataport(datapkg&  data);
+  // Прочитать порт данных
+  bool read_dataport(int& ret_code);
   // Получить код от сервера
   bool getcode();
   // Отправить данные
